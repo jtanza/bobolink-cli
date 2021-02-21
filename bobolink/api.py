@@ -1,3 +1,4 @@
+import json
 import requests
 
 BASE_URL = 'http://localhost:3000/'
@@ -24,3 +25,29 @@ def add_bookmarks(creds, bookmarks):
     r = requests.post(BASE_URL + 'bookmarks', auth=(creds['email'], creds['token']), 
                       json={'urls': bookmarks})
     return raise_bad_request(r)
+
+
+def delete_bookmarks(creds, bookmarks):
+    r = requests.delete(BASE_URL + 'bookmarks', auth=(creds['email'], creds['token']),
+                      json={'urls': bookmarks})
+    return raise_bad_request(r)
+
+
+def get_user_data(creds):
+    email = creds['email']
+    r = requests.post(BASE_URL + 'users/search', auth=(email, creds['token']),
+                      json={'email': email})
+    return raise_bad_request(r)
+
+
+def get_user_bookmarks(creds):
+    user = json.loads(get_user_data(creds))
+    r = requests.get(f'{BASE_URL}users/{user["id"]}/bookmarks',
+                     auth=(creds['email'], creds['token']))
+    return json.loads(raise_bad_request(r))
+
+
+def search_bookmarks(creds, query, field='content'):
+    r = requests.post(BASE_URL + 'bookmarks/search', auth=(creds['email'], creds['token']),
+                      json={'query': query, 'field': field})
+    return json.loads(raise_bad_request(r))

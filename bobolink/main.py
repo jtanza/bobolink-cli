@@ -1,7 +1,8 @@
 import click
 import configparser
-from pathlib import Path
 from bobolink import api
+from pathlib import Path
+from termcolor import colored
 
 INI_PATH = str(Path.home()) + '/.bobolink'
 
@@ -50,6 +51,7 @@ def configure(email, password):
 def get_creds():
   config = configparser.ConfigParser()
   config.read(INI_PATH + '/credentials')
+
   default = config['default']
   return {'token': default['bobolink_token'], 
           'email': default['bobolink_email']}  
@@ -63,6 +65,49 @@ def add(bookmarks):
     click.echo('Success! Added: ' + added)
   except Exception as e:
     click.echo(f'Error while adding bookmarks: {e}')
+
+
+@cli.command()
+@click.argument('bookmarks', nargs=-1)
+def delete(bookmarks):
+  try:
+    deleted = api.delete_bookmarks(get_creds(), bookmarks)
+    click.echo('Success! Deleted: ' + deleted)
+  except Exception as e:
+    click.echo(f'Error while deleting bookmarks: {e}')
+
+
+@cli.command()
+@click.argument('bookmarks', nargs=-1)
+def export(bookmarks):
+  try:
+    bookmarks = api.get_user_bookmarks(get_creds())
+    click.echo('\n'.join(bookmarks))
+  except Exception as e:
+    click.echo(f'Error while exporting bookmarks: {e}')
+
+
+def format_hit(hit):
+  arr = []
+  for word in hit['content'].split(' '):
+    if word.startswith('<b>'):
+      word = colored(word.replace('<b>', '').replace('</b>', ''), 'red')
+    arr.append(word)
+
+  match = f'{colored("match", "green")}: {" ".join(arr)}'
+  url = f'{colored("url", "green")}: {colored(hit["url"], attrs=["underline"])}'
+
+  return f'{url}\n{match}'
+
+
+@cli.command()
+@click.argument('query')
+def search(query):
+  try:
+    hits = api.search_bookmarks(get_creds(), query)
+    click.echo('\n\n'.join(list(map(format_hit, hits))))
+  except Exception as e:
+    click.echo(f'Error while searching bookmarks: {e}')
   
 
 if __name__ == "__main__":

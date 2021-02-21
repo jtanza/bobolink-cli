@@ -8,6 +8,7 @@ authors = ["jtanza <tanzajohn@gmail.com>"]
 python = "^3.8"
 click = "^7.1.2"
 requests = "^2.25.1"
+termcolor = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
