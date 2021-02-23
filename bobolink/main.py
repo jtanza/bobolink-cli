@@ -15,7 +15,12 @@ def cli():
 @click.option('--email', prompt=True)
 @click.option('--password', prompt=True, hide_input=True,
               confirmation_prompt=True)
-def signup(email, password):  
+def signup(email, password):
+  '''Creates a new bobolink user.
+
+  Password should be at least 8 characters in length, contain
+  at least one lowercase and uppercase letter and one number.
+  '''
   try:
     api.signup(email, password)
     click.echo('''
@@ -23,7 +28,7 @@ def signup(email, password):
     Please run [bobolink configure] to initialize your
     environment.
     ''')
-  except Exception as e:
+  except Exception as e:    
     click.echo(f'Error while creating user: {e}')
 
 
@@ -38,19 +43,19 @@ def configure(email, password):
     Path(INI_PATH).mkdir(exist_ok=True)
 
     config = configparser.ConfigParser()
-    config['default'] = {'bobolink_token': token,
-                         'bobolink_email': email}
+    config['default'] = {'bobolink_email': email,
+                         'bobolink_token': token}
 
-    with open(INI_PATH + '/credentials', 'w') as f:
+    with open(f'{INI_PATH}/credentials', 'w') as f:
       config.write(f)
 
-    click.echo('Success! Configuration written to ' + INI_PATH)
+    click.echo(f'Success! Configuration written to {INI_PATH}.\nBobolink is ready to use.')
   except Exception as e:
     click.echo(f'Error while configuring environment: {e}')
 
 def get_creds():
   config = configparser.ConfigParser()
-  config.read(INI_PATH + '/credentials')
+  config.read(f'{INI_PATH}/credentials')
 
   default = config['default']
   return {'token': default['bobolink_token'], 
@@ -62,7 +67,7 @@ def get_creds():
 def add(bookmarks):
   try:
     added = api.add_bookmarks(get_creds(), bookmarks)
-    click.echo('Success! Added: ' + added)
+    click.echo('Success! Added:\n' + '\n'.join(added))
   except Exception as e:
     click.echo(f'Error while adding bookmarks: {e}')
 
@@ -72,7 +77,7 @@ def add(bookmarks):
 def delete(bookmarks):
   try:
     deleted = api.delete_bookmarks(get_creds(), bookmarks)
-    click.echo('Success! Deleted: ' + deleted)
+    click.echo('Success! Deleted:\n' + '\n'.join(deleted))
   except Exception as e:
     click.echo(f'Error while deleting bookmarks: {e}')
 
@@ -87,25 +92,31 @@ def export(bookmarks):
     click.echo(f'Error while exporting bookmarks: {e}')
 
 
-def format_hit(hit):
+def format_hit(hit, url_only):
+  url = f'{colored("[url]", "green")}: {colored(hit["url"], attrs=["underline"])}'
+
+  if url_only:
+    return url
+
   arr = []
   for word in hit['content'].split(' '):
     if word.startswith('<b>'):
-      word = colored(word.replace('<b>', '').replace('</b>', ''), 'red')
+      word = colored(word.replace('<b>', '').replace('</b>', ''), 'yellow')
     arr.append(word)
 
-  match = f'{colored("match", "green")}: {" ".join(arr)}'
-  url = f'{colored("url", "green")}: {colored(hit["url"], attrs=["underline"])}'
-
+  match = f'{colored("[match]", "green")}: {" ".join(arr)}'
   return f'{url}\n{match}'
 
 
 @cli.command()
 @click.argument('query')
-def search(query):
+@click.option('--field')
+@click.option('--url-only', is_flag=True)
+def search(query, field, url_only):
   try:
-    hits = api.search_bookmarks(get_creds(), query)
-    click.echo('\n\n'.join(list(map(format_hit, hits))))
+    hits = api.search_bookmarks(get_creds(), query, field)
+    formatted = list(map(lambda hit: format_hit(hit, url_only), hits))
+    click.echo('\n'.join(formatted))
   except Exception as e:
     click.echo(f'Error while searching bookmarks: {e}')
   
