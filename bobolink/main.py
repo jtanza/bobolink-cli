@@ -14,25 +14,21 @@ def cli():
 
 @cli.command()
 @click.option('--email', prompt=True)
-@click.option('--password', prompt=True, hide_input=True)
+@click.option('--password', prompt=True, hide_input=True,
+              confirmation_prompt=True)
 def signup(email, password):
-  '''Creates a new bobolink user.
-  '''
+  '''Creates a new bobolink user.'''
   try:
     api.signup(email, password)
-    click.echo('''
-    Success! Your account has succesfully been created.
-    Please run [bobolink configure] to initialize your
-    environment.
-    ''')
+    click.echo('Success! Your account has succesfully been created.\n'
+    'Please run [bobolink configure] to initialize your environment.')
   except Exception as e:    
     click.echo(f'Error while creating user: {e}')
 
 
 @cli.command()
 @click.option('--email', prompt=True)
-@click.option('--password', prompt=True, hide_input=True,
-              confirmation_prompt=True)
+@click.option('--password', prompt=True, hide_input=True)
 def configure(email, password):
   '''Creates a bobolink credentials file.
 
@@ -58,6 +54,35 @@ def configure(email, password):
     click.echo(f'Success! Configuration written to {INI_PATH}.\nBobolink is ready to use.')
   except Exception as e:
     click.echo(f'Error while configuring environment: {e}')
+
+
+@cli.command()
+@click.option('--email', prompt=True)
+@click.option('--get-reset-token', is_flag=True,
+              help='Send the requisite reset token to the user\'s email')
+def reset_password(email, get_reset_token):
+  '''Resets a users bobolink password.
+
+  User's should first run with [--get-reset-token] in order to generate
+  a reset token (required in order to perform a password reset).
+
+  Authentication tokens are invalidated after a password reset. User's
+  should run [bobolink configure] in order to generate a new, valid auth token.
+  '''
+  try:
+    if get_reset_token:
+      api.send_reset_token(email)
+      click.echo(f'Success! Reset token sent to {email}')
+    else:
+      reset_token = click.prompt('Token', hide_input=True)
+      new_password = click.prompt('New Password', hide_input=True)
+      api.reset_password(email, new_password, reset_token)
+      click.echo('Success! Password has been reset.\n'
+                'Be sure to run [bobolink configure] to update'
+                'your environment with your new password.')
+  except Exception as e:
+    click.echo(f'Error while resetting password: {e}')
+
 
 def get_creds():
   config = configparser.ConfigParser()
@@ -136,7 +161,7 @@ def format_hit(hit, url_only, field):
               help='the bookmark field to search on')
 @click.option('--url-only', is_flag=True, help='only return the URL of a match')
 def search(query, field, url_only):
-  '''Searches a QUERY string against a user's bookmark store.
+  '''Searches a query string against a user's bookmark store.
 
   When no field is supplied, searches the text content of the HTML
   page associated with a user's bookmark.

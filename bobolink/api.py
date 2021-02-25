@@ -16,6 +16,17 @@ def signup(email, password):
     return raise_bad_request(r, parse_json=False)
 
 
+def reset_password(email, new_password, token):
+    r = requests.put(BASE_URL + 'users/account/password',
+                         json={'email':email, 'new':new_password, 'token':token})
+    return raise_bad_request(r, parse_json=False)
+
+
+def send_reset_token(email):
+    r = requests.put(BASE_URL + 'users/account/password', json={'email':email})
+    return raise_bad_request(r, parse_json=False)
+
+
 def get_token(email, password):
     r = requests.get(BASE_URL + 'token', auth=(email, password))
     return raise_bad_request(r, parse_json=False)
