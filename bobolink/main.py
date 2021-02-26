@@ -56,11 +56,20 @@ def configure(email, password):
     click.echo(f'Error while configuring environment: {e}')
 
 
+def get_creds():
+  '''Reads user credentials from INI file'''
+  config = configparser.ConfigParser()
+  config.read(f'{INI_PATH}/credentials')
+
+  default = config['default']
+  return {'token': default['bobolink_token'],
+          'email': default['bobolink_email']}
+
+
 @cli.command()
-@click.option('--email', prompt=True)
 @click.option('--get-reset-token', is_flag=True,
               help='Send the requisite reset token to the user\'s email')
-def reset_password(email, get_reset_token):
+def reset_password(get_reset_token):
   '''Resets a users bobolink password.
 
   User's should first run with [--get-reset-token] in order to generate
@@ -69,28 +78,20 @@ def reset_password(email, get_reset_token):
   Authentication tokens are invalidated after a password reset. User's
   should run [bobolink configure] in order to generate a new, valid auth token.
   '''
+  email = get_creds()['email']
   try:
     if get_reset_token:
       api.send_reset_token(email)
       click.echo(f'Success! Reset token sent to {email}')
     else:
       reset_token = click.prompt('Token', hide_input=True)
-      new_password = click.prompt('New Password', hide_input=True)
+      new_password = click.prompt('New Password', hide_input=True, confirmation_prompt=True)
       api.reset_password(email, new_password, reset_token)
       click.echo('Success! Password has been reset.\n'
                 'Be sure to run [bobolink configure] to update'
                 'your environment with your new password.')
   except Exception as e:
     click.echo(f'Error while resetting password: {e}')
-
-
-def get_creds():
-  config = configparser.ConfigParser()
-  config.read(f'{INI_PATH}/credentials')
-
-  default = config['default']
-  return {'token': default['bobolink_token'], 
-          'email': default['bobolink_email']}  
 
 
 @cli.command()

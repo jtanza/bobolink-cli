@@ -1,7 +1,8 @@
 import json
+import os
 import requests
 
-BASE_URL = 'http://localhost:3000/v1/'
+BASE_URL = os.environ.get('BOBO_URL', 'http://localhost:3000/v1/')
 
 def raise_bad_request(request, parse_json=True):
     try:
