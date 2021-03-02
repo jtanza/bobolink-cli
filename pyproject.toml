@@ -1,8 +1,12 @@
 [tool.poetry]
 name = "bobolink"
 version = "0.1.0"
-description = ""
+description = "bobolink stores bookmarks and helps you search for them later"
 authors = ["jtanza <tanzajohn@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/jtanza/bobolink-cli"
+repository = "https://github.com/jtanza/bobolink-cli"
 
 [tool.poetry.dependencies]
 python = "^3.8"

@@ -7,6 +7,7 @@ from termcolor import colored
 INI_PATH = str(Path.home()) + '/.bobolink'
 
 @click.group()
+@click.version_option("0.1.0")
 def cli():
   '''Bobolink - dump links, search them later.'''
   pass
