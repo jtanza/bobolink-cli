@@ -170,6 +170,10 @@ def search(query, field, url_only):
   When searching on content, an attempt is made to highlight where those
   matches occured in the original HTML. Support for this feature varies
   by terminal.
+
+  Search syntax for bobolink is equivalent to the query language supported
+  by Lucene's Query Parser. User's should refer to the Lucene documentation
+  for more info and example usage: https://lucene.apache.org/core/2_9_4/queryparsersyntax.html
   '''
   try:
     hits = api.search_bookmarks(get_creds(), query, field)
