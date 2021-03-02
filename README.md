@@ -1,7 +1,7 @@
 # bobolink-cli
 
 bobolink is a small tool that helps user's store bookmarks and search for them later.
-More specifically, bobolink provides full text search on the HTML documents of bookmarks that you've saved. In practice, this allows you to use bobolink to save some links, and later search/find all your links which contain for example 
+More specifically, bobolink provides full text search on the HTML documents of the bookmarks that you've saved. In practice, this allows you to use bobolink to save some links, and later search/find all your links which contain for example 
 `"(songbird OR blackbird) AND NOT currawong".`
 
 For more information on bobolink in general, please refer to the [website](https://bobolink.me)
